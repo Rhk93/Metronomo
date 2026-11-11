@@ -4,7 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#14121f">
-<title>Metronomo</title>
+<title>Metronomo · Classe chitarra Ignazio</title>
+<meta name="description" content="Metronomo per gli studenti di chitarra">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Metronomo">
+<link rel="apple-touch-icon" href="icona.png">
+<link rel="icon" type="image/png" href="icona.png">
+<link rel="manifest" href="manifest.json">
 <style>
 :root{
   --bg:#14121f; --panel:#1f1c30; --panel-a:.85; --panel-rgba:rgba(31,28,48,.85);
@@ -43,6 +51,15 @@ header .titoli{min-width:0}
 #cerchio.forte.colpo{color:var(--on-accent)}
 #cerchio.forte{border-color:var(--accent)}
 #cerchio.forte.colpo{background:var(--accent)}
+#saltello{display:none;width:100%;max-width:440px}
+#svgSalto{width:100%;height:auto;display:block;overflow:visible}
+#svgSalto .rigo{stroke:var(--muted);stroke-width:1.4;opacity:.55}
+#svgSalto .nota{fill:var(--text);stroke:var(--text);transform-box:fill-box;transform-origin:center;transition:transform .1s}
+#svgSalto .nota.forte{fill:var(--accent);stroke:var(--accent)}
+#svgSalto .nota.muta{opacity:.25}
+#svgSalto .nota.colpita{transform:scale(1.25)}
+#svgSalto #palla{fill:var(--primary)}
+#svgSalto #ombra{fill:#000;opacity:.25}
 #numerone{display:none;font-size:7em;font-weight:calc(var(--weight) + 400);line-height:1;color:var(--primary)}
 #numerone.forte{color:var(--accent)}
 
@@ -85,6 +102,7 @@ body.compatto #visual{min-height:110px}
 body.compatto #pendolo{transform:scale(.7)}
 body.compatto #cerchio{width:110px;height:110px;font-size:2.8em}
 body.compatto #numerone{font-size:4.5em}
+body.compatto #saltello{max-width:330px}
 body.compatto #bpm{font-size:calc(3.8em * var(--bpmsize))}
 body.compatto #app{gap:8px}
 body.compatto .card{padding:10px}
@@ -93,6 +111,7 @@ body.grande #visual{min-height:240px}
 body.grande #pendolo{transform:scale(1.35)}
 body.grande #cerchio{width:240px;height:240px;font-size:6em}
 body.grande #numerone{font-size:10em}
+body.grande #saltello{max-width:640px}
 body.grande #bpm{font-size:calc(7em * var(--bpmsize))}
 body.grande #start{height:90px;font-size:1.9em}
 body.nascondi-nome #nomeTempo{display:none}
@@ -159,6 +178,7 @@ input[type=color]{width:44px;height:36px;border:none;background:none;padding:0}
     <div id="pendolo"><div class="base"></div><div id="asta"></div></div>
     <div id="cerchio">1</div>
     <div id="numerone">1</div>
+    <div id="saltello"><svg id="svgSalto" viewBox="0 0 340 150"></svg></div>
   </div>
 
   <div class="card" id="cardBattiti">
@@ -237,7 +257,7 @@ input[type=color]{width:44px;height:36px;border:none;background:none;padding:0}
           <div class="interr">Lampeggio dello schermo a ogni battito<input type="checkbox" id="flashOn"></div>
           <div class="interr">Lampeggio solo sull'accento<input type="checkbox" id="flashSoloAcc"></div>
           <div class="interr">Vibrazione sull'accento<input type="checkbox" id="vibraOn"></div>
-          <div class="interr">Continua a suonare se esco dall'app<input type="checkbox" id="sottofondo"></div>
+          <div class="interr">Continua a suonare se cambio app o scheda<input type="checkbox" id="sottofondo"></div>
           <div class="avviso">In secondo piano il telefono può rallentare il tempo: per la massima precisione tieni l'app aperta.</div>
         </div>
       </div>
@@ -347,6 +367,7 @@ input[type=color]{width:44px;height:36px;border:none;background:none;padding:0}
         <div class="gruppo">
           <h3>Animazione</h3>
           <div class="campo"><select id="visuale">
+            <option value="pallino">Pallino che salta sulle note</option>
             <option value="pendolo">Pendolo</option>
             <option value="cerchio">Cerchio che pulsa</option>
             <option value="numero">Numero grande del battito</option>
@@ -465,7 +486,7 @@ const DEFAULT = {
   colori:{...TEMI['Notte']}, panelA:85, raggio:18,
   font:FONT[0][0], scala:100, bpmSize:100, peso:400, maiuscolo:false,
   titolo:'Metronomo', sottotitolo:'Classe chitarra Ignazio',
-  layout:'classico', visuale:'pendolo',
+  layout:'classico', visuale:'pallino',
   mostra:{titolo:true,battiti:true,nome:true,tap:true,rapidi:true,stato:true},
   velo:30, sfoc:0, adatta:'cover', posFoto:'center'
 };
@@ -508,6 +529,23 @@ function preparaAudio(){
   const len = ctx.sampleRate; bufRumore = ctx.createBuffer(1,len,ctx.sampleRate);
   const d = bufRumore.getChannelData(0); for(let i=0;i<len;i++) d[i]=Math.random()*2-1;
 }
+/* iPhone: fa suonare il metronomo anche con il tasto silenzioso attivo */
+let audioMuto=null;
+function sbloccaIOS(){
+  try{ if(navigator.audioSession) navigator.audioSession.type='playback'; }catch(e){}
+  if(audioMuto) return;
+  try{
+    const n=8000, buf=new ArrayBuffer(44+n), v=new DataView(buf);
+    const w=(o,t)=>{for(let i=0;i<t.length;i++) v.setUint8(o+i,t.charCodeAt(i))};
+    w(0,'RIFF'); v.setUint32(4,36+n,true); w(8,'WAVE'); w(12,'fmt '); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+    v.setUint32(24,8000,true); v.setUint32(28,8000,true); v.setUint16(32,1,true); v.setUint16(34,8,true); w(36,'data'); v.setUint32(40,n,true);
+    for(let i=0;i<n;i++) v.setUint8(44+i,128);
+    audioMuto=new Audio(URL.createObjectURL(new Blob([buf],{type:'audio/wav'})));
+    audioMuto.loop=true; audioMuto.setAttribute('playsinline',''); audioMuto.volume=0.01;
+    const pr=audioMuto.play(); if(pr) pr.catch(()=>{});
+  }catch(e){}
+}
+function riprendiAudio(){ sbloccaIOS(); if(ctx && ctx.state!=='running') ctx.resume(); }
 function aggiornaVolume(){ if(master) master.gain.value = Math.pow(S.master/100,1.5)*1.6; }
 function inviluppo(g,t,v,att,dec){
   v=Math.max(v,0.0002);
@@ -611,9 +649,10 @@ function pianificatore(){
 }
 function avvia(){
   preparaAudio();
-  if(ctx.state==='suspended') ctx.resume();
+  riprendiAudio();
   if(S.trOn){ S.bpm = limita(S.trDa,20,300); mostraBpm(); }
   inMarcia=true; iBattito=0; iSudd=0; nBattute=0; coda=[]; inAttacco=S.countIn;
+  ultimoBattito={t:0,i:-1,dur:60/S.bpm};
   prossimo = ctx.currentTime + 0.08;
   inizioStudio = Date.now();
   clearInterval(idTimer); idTimer=setInterval(pianificatore,20);
@@ -627,6 +666,7 @@ function ferma(){
   $('start').textContent='▶ AVVIA'; $('start').classList.remove('attivo');
   document.querySelectorAll('.batt.on').forEach(b=>b.classList.remove('on'));
   $('asta').style.transform='rotate(0deg)';
+  muoviPalla(0,0);
   $('cerchio').classList.remove('colpo');
   $('infoAllen').textContent='';
   tieniSchermo(false);
@@ -656,6 +696,11 @@ function disegna(){
     const dir = (ultimoBattito.i % 2===0) ? -1 : 1;
     $('asta').style.transform = 'rotate('+(dir*28*Math.cos(Math.PI*frac))+'deg)';
   }
+  // Pallino che salta
+  if(S.visuale==='pallino'){
+    if(ultimoBattito.i<0) muoviPalla(0,0);
+    else muoviPalla(ultimoBattito.i, Math.min(1, Math.max(0,(ora - ultimoBattito.t)/ultimoBattito.dur)));
+  }
   // Cronometro
   const sec = Math.floor((Date.now()-inizioStudio)/1000);
   $('cronometro').textContent = Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0');
@@ -671,6 +716,7 @@ function colpoVisivo(n){
   else if(S.trOn) info='→ '+S.trA;
   $('infoAllen').textContent=info;
   if(n.muta) return;
+  if(S.visuale==='pallino' && n.liv>0) colpisciNota(n.i);
   const forte = n.liv===2;
   const c=$('cerchio'), num=$('numerone');
   c.textContent = n.i+1; num.textContent = n.i+1;
@@ -682,6 +728,58 @@ function colpoVisivo(n){
     requestAnimationFrame(()=>{ f.style.transition='opacity .15s ease-out'; f.style.opacity=0; });
   }
   if(S.vibra && forte && navigator.vibrate){ try{navigator.vibrate(30)}catch(e){} }
+}
+
+/* ================== PALLINO CHE SALTA SULLE SEMIMINIME ================== */
+const NS='http://www.w3.org/2000/svg';
+const SALTO={W:340, y0:108, g:9, xs:[], yAtterra:0, rPalla:8, ry:6};
+function elSvg(tag,att){ const e=document.createElementNS(NS,tag); for(const k in att) e.setAttribute(k,att[k]); return e; }
+function disegnaNote(){
+  const svg=$('svgSalto'); if(!svg) return;
+  svg.innerHTML='';
+  const N=S.battiti, W=SALTO.W, y0=SALTO.y0, g=SALTO.g;
+  // Pentagramma
+  for(let k=-2;k<=2;k++) svg.appendChild(elSvg('line',{x1:6,x2:W-6,y1:y0+k*g,y2:y0+k*g,class:'rigo'}));
+  svg.appendChild(elSvg('line',{x1:6,x2:6,y1:y0-2*g,y2:y0+2*g,class:'rigo'}));
+  svg.appendChild(elSvg('line',{x1:W-6,x2:W-6,y1:y0-2*g,y2:y0+2*g,class:'rigo'}));
+  // Posizione delle note
+  const margine=34, passo=N>1?(W-2*margine)/(N-1):0;
+  SALTO.xs=[]; for(let i=0;i<N;i++) SALTO.xs.push(N>1 ? margine+i*passo : W/2);
+  const rx=Math.max(5,Math.min(9, N>1?passo*0.36:9)), ry=rx*0.72;
+  SALTO.ry=ry; SALTO.rPalla=Math.max(5,Math.min(8,rx*0.9));
+  SALTO.yAtterra=y0-ry-SALTO.rPalla-1;
+  // Ombra e pallino (disegnati prima delle note? no: ombra prima, palla dopo)
+  svg.appendChild(elSvg('ellipse',{id:'ombra',cx:SALTO.xs[0],cy:y0-ry+1,rx:SALTO.rPalla,ry:2}));
+  // Semiminime: testa piena + gambo in giù (così il pallino atterra sulla testa)
+  S.accenti.forEach((liv,i)=>{
+    const x=SALTO.xs[i];
+    const gr=elSvg('g',{class:'nota'+(liv===2?' forte':'')+(liv===0?' muta':''),id:'nota'+i});
+    gr.appendChild(elSvg('ellipse',{cx:x,cy:y0,rx:rx,ry:ry,transform:'rotate(-20 '+x+' '+y0+')'}));
+    const xg=x-rx+1.2;
+    gr.appendChild(elSvg('line',{x1:xg,x2:xg,y1:y0+1,y2:y0+3.4*g,'stroke-width':Math.max(1.4,rx*0.2),'stroke-linecap':'round'}));
+    svg.appendChild(gr);
+  });
+  svg.appendChild(elSvg('ellipse',{id:'palla',cx:SALTO.xs[0],cy:SALTO.yAtterra,rx:SALTO.rPalla,ry:SALTO.rPalla}));
+}
+function muoviPalla(i,frac){
+  const N=SALTO.xs.length; if(!N) return;
+  const palla=$('palla'), ombra=$('ombra'); if(!palla) return;
+  i=((i%N)+N)%N;
+  const da=SALTO.xs[i], a=SALTO.xs[(i+1)%N];
+  const ritorno = (i+1)%N===0 && N>1;
+  const altezza = ritorno ? 82 : 62;
+  const x = N===1 ? da : da+(a-da)*frac;
+  const y = SALTO.yAtterra - altezza*4*frac*(1-frac);
+  // Schiacciamento quando tocca la nota
+  const vicino=Math.min(frac,1-frac), r=SALTO.rPalla;
+  const sch = vicino<0.07 ? 1-(0.07-vicino)*4 : 1;
+  palla.setAttribute('cx',x); palla.setAttribute('cy',y+r*(1-sch));
+  palla.setAttribute('rx',r*(2-sch)); palla.setAttribute('ry',r*sch);
+  ombra.setAttribute('cx',x); ombra.setAttribute('rx',r*(0.4+0.6*(1-(SALTO.yAtterra-y)/90)));
+}
+function colpisciNota(i){
+  const n=$('nota'+i); if(!n) return;
+  n.classList.add('colpita'); setTimeout(()=>n.classList.remove('colpita'),110);
 }
 
 /* ================== INTERFACCIA PRINCIPALE ================== */
@@ -703,6 +801,7 @@ function disegnaBattiti(){
     d.onclick=()=>{ S.accenti[i] = liv===2?1:(liv===1?0:2); disegnaBattiti(); salva(); };
     box.appendChild(d);
   });
+  disegnaNote();
 }
 function impostaTempo(b,n){
   const vecchio=S.battiti;
@@ -733,7 +832,7 @@ $('tap').addEventListener('pointerdown',e=>{
     let somma=0; for(let i=1;i<tocchi.length;i++) somma+=tocchi[i]-tocchi[i-1];
     impostaBpm(60000/(somma/(tocchi.length-1)));
   }
-  preparaAudio(); if(ctx.state==='suspended') ctx.resume();
+  preparaAudio(); riprendiAudio();
   if(!inMarcia) suona(S.voci.battito.suono, ctx.currentTime+0.01, S.voci.battito.vol, S.voci.battito.tono);
 });
 $('start').onclick=()=> inMarcia ? ferma() : avvia();
@@ -788,7 +887,7 @@ for(const k in NOMI_VOCI){
     '<button class="btn mini" style="width:100%" id="p_'+k+'">▶ Prova suono</button>';
   $('vociSuono').appendChild(g);
   riempiSelect($('s_'+k), Object.entries(SUONI));
-  const prova=()=>{ preparaAudio(); if(ctx.state==='suspended') ctx.resume(); const v=S.voci[k]; suona(v.suono, ctx.currentTime+0.02, v.vol, v.tono); };
+  const prova=()=>{ preparaAudio(); riprendiAudio(); const v=S.voci[k]; suona(v.suono, ctx.currentTime+0.02, v.vol, v.tono); };
   $('s_'+k).onchange=e=>{ S.voci[k].suono=e.target.value; prova(); salva(); };
   $('v_'+k).oninput=e=>{ S.voci[k].vol=+e.target.value; $('v_'+k+'V').textContent=e.target.value+'%'; salva(); };
   $('v_'+k).onchange=prova;
@@ -895,6 +994,7 @@ function applicaAspetto(){
   $('pendolo').style.display = S.visuale==='pendolo'?'block':'none';
   $('cerchio').style.display = S.visuale==='cerchio'?'flex':'none';
   $('numerone').style.display = S.visuale==='numero'?'block':'none';
+  $('saltello').style.display = S.visuale==='pallino'?'block':'none';
   $('visual').style.display = S.visuale==='nessuna'?'none':'flex';
   document.querySelector('meta[name=theme-color]').content=c.bg;
   $('scalaV').textContent=S.scala+'%'; $('bpmSizeV').textContent=S.bpmSize+'%';
@@ -995,6 +1095,11 @@ document.addEventListener('visibilitychange',()=>{ if(document.hidden){ window.a
 
 /* ================== AVVIO ================== */
 aggiornaControlli(); applicaAspetto(); applicaFoto(); disegnaPalette(); disegnaBattiti(); disegnaPreset(); mostraBpm();
+
+/* Funziona anche senza internet dopo la prima apertura */
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
 </script>
 </body>
 </html>
