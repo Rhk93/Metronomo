@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Sfondo tondo -->
+    <path
+        android:fillColor="#1E1B2E"
+        android:pathData="M54,4 A50,50 0 1,1 53.99,4 Z" />
+
+    <!-- Corpo del metronomo (piramide) -->
+    <path
+        android:fillColor="#F5A623"
+        android:pathData="M44,22 L64,22 L80,88 L28,88 Z" />
+
+    <!-- Finestra interna -->
+    <path
+        android:fillColor="#1E1B2E"
+        android:pathData="M47,30 L61,30 L71,74 L37,74 Z" />
+
+    <!-- Asta del pendolo -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M52.5,76 L55.5,76 L68,32 L65.5,31 Z" />
+
+    <!-- Peso sul pendolo -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M60,46 L68,48 L66,55 L58,53 Z" />
+
+    <!-- Base -->
+    <path
+        android:fillColor="#C47F0F"
+        android:pathData="M26,86 L82,86 L82,92 L26,92 Z" />
+</vector>
