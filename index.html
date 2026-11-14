@@ -62,8 +62,16 @@ header .titoli{min-width:0}
 #svgSolf .meta{fill:none;stroke:var(--muted);stroke-width:2;opacity:.8}
 #svgSolf .etich{font-size:13px;font-weight:700;fill:var(--muted)}
 #svgSolf .centroS{fill:var(--text)}
-#svgSolf .scia{stroke:var(--primary);stroke-width:3;stroke-linecap:round;opacity:.55}
-#svgSolf .mano{font-size:38px}
+#svgSolf .scia{display:none}
+#svgSolf .braccio{display:none}
+#svgSolf .manoReale{filter:drop-shadow(0 1px 1.2px rgba(0,0,0,.3))}
+#svgSolf .manoReale .pelle{stroke:var(--bordo);stroke-width:.5;stroke-linejoin:round}
+#svgSolf .manoReale .piega{fill:none;stroke:var(--piega);stroke-width:.5;stroke-linecap:round;opacity:.55}
+#svgSolf .manoReale .bordoMano{fill:none;stroke:var(--bordo);stroke-width:.5;stroke-linecap:round}
+#svgSolf .manoReale .unghia{fill:url(#gUnghia);stroke:var(--bordo);stroke-width:.35}
+#svgSolf .manoReale .luce{fill:#fff;opacity:.3}
+#svgSolf .sp-luce{stop-color:var(--pLuce)} #svgSolf .sp-base{stop-color:var(--pBase)} #svgSolf .sp-ombra{stop-color:var(--pOmbra)}
+#svgSolf .sp-unghia{stop-color:var(--pUnghia)} #svgSolf .sp-unghia-luce{stop-color:#fff6f2}
 #svgSolf .contoS{font-size:22px;font-weight:800;fill:var(--text)}
 #numerone{display:none;font-size:7em;font-weight:calc(var(--weight) + 400);line-height:1;color:var(--primary)}
 #numerone.forte{color:var(--accent)}
@@ -187,7 +195,7 @@ input[type=color]{width:44px;height:36px;border:none;background:none;padding:0}
     <div id="cerchio">1</div>
     <div id="numerone">1</div>
     <div id="notaBox"><svg id="svgNota" viewBox="0 0 240 240"></svg></div>
-    <div id="solfBox"><svg id="svgSolf" viewBox="0 0 240 240"></svg></div>
+    <div id="solfBox"><svg id="svgSolf" viewBox="0 0 240 262"></svg></div>
   </div>
 
   <div class="card" id="cardBattiti">
@@ -505,7 +513,7 @@ const DEFAULT = {
   colori:{...TEMI['Notte']}, panelA:85, raggio:18,
   font:FONT[0][0], scala:100, bpmSize:100, peso:400, maiuscolo:false,
   titolo:'Metronomo', sottotitolo:'Classe chitarra Ignazio',
-  layout:'classico', visuale:'nota', versione:6, arcobaleno:true, coloriBattiti:null,
+  layout:'classico', visuale:'nota', versione:6, arcobaleno:true, coloriBattiti:null, 
   mostra:{titolo:true,battiti:true,nome:true,tap:true,rapidi:true,stato:true},
   velo:30, sfoc:0, adatta:'cover', posFoto:'center'
 };
@@ -829,7 +837,7 @@ function riposoNota(){ OR.attivo=-2; aggiornaOrologio(-1,0,false); aggiornaSolfe
 
 /* ================== SOLFEGGIO: MANO CHE BATTE IL TEMPO ================== */
 const DIREZ={giu:[0,1],sinistra:[-1,0],destra:[1,0],su:[0,-1]};
-const SO={cx:120,cy:112,dist:82,schema:[],mano:null,scia:null,mete:{},conto:null,attivo:-2};
+const SO={spalla:[168,292],lungMano:38,braccio:null,polsino:null,gMano:null,cx:120,cy:112,dist:82,schema:[],mano:null,scia:null,mete:{},conto:null,attivo:-2};
 // Per ogni battito: direzione e ampiezza del movimento
 function schemaSolfeggio(N,nota){
   const sch=[];
@@ -866,11 +874,80 @@ function disegnaSolfeggio(){
   }
   SO.scia=elSvg('line',{x1:SO.cx,y1:SO.cy,x2:SO.cx,y2:SO.cy,class:'scia'}); svg.appendChild(SO.scia);
   svg.appendChild(elSvg('circle',{cx:SO.cx,cy:SO.cy,r:6,class:'centroS'}));
-  SO.mano=elSvg('text',{x:SO.cx,y:SO.cy,'text-anchor':'middle','dominant-baseline':'central',class:'mano'}); SO.mano.textContent='✋';
-  svg.appendChild(SO.mano);
+  // Braccio che arriva dal basso, collegato al polso; la mano (vista dal dorso) segue il braccio
+  SO.braccio=elSvg('line',{class:'braccio'}); SO.polsino=null;
+  svg.append(SO.braccio);
+  SO.gMano=elSvg('g',{});
+  // Mano realistica vista dal dorso (mano destra, dita in su): la punta del medio è nel punto (0,0)
+  SO.mano=elSvg('g',{class:'manoReale'});
+  const defs=elSvg('defs',{});
+  const gD=elSvg('linearGradient',{id:'gDito',x1:0,y1:0,x2:1,y2:0});
+  [['0','sp-ombra'],['.3','sp-luce'],['.6','sp-base'],['1','sp-ombra']].forEach(([o,c])=>gD.appendChild(elSvg('stop',{offset:o,class:c})));
+  const gP=elSvg('radialGradient',{id:'gPalmo',cx:.42,cy:.38,r:.75});
+  [['0','sp-luce'],['.55','sp-base'],['1','sp-ombra']].forEach(([o,c])=>gP.appendChild(elSvg('stop',{offset:o,class:c})));
+  const gU=elSvg('linearGradient',{id:'gUnghia',x1:0,y1:0,x2:0,y2:1});
+  [['0','sp-unghia-luce'],['1','sp-unghia']].forEach(([o,c])=>gU.appendChild(elSvg('stop',{offset:o,class:c})));
+  defs.append(gD,gP,gU); SO.mano.appendChild(defs);
+  // Dito: dalla base alla punta (top = punto più alto), larghezza alla base e in punta
+  const dito=(bx,by,topx,topy,wb,wt)=>{
+    let ux=topx-bx, uy=topy-by; const L=Math.hypot(ux,uy); ux/=L; uy/=L;
+    const nx=-uy, ny=ux, tx=topx-ux*0.5625*wt, ty=topy-uy*0.5625*wt;
+    const P=(x,y)=>x.toFixed(2)+','+y.toFixed(2);
+    const d='M'+P(bx-nx*wb/2,by-ny*wb/2)+' L'+P(tx-nx*wt/2,ty-ny*wt/2)+
+      ' C'+P(tx-nx*wt/2+ux*.75*wt,ty-ny*wt/2+uy*.75*wt)+' '+P(tx+nx*wt/2+ux*.75*wt,ty+ny*wt/2+uy*.75*wt)+' '+P(tx+nx*wt/2,ty+ny*wt/2)+
+      ' L'+P(bx+nx*wb/2,by+ny*wb/2)+' Z';
+    SO.mano.appendChild(elSvg('path',{d,class:'pelle',fill:'url(#gDito)'}));
+    const ang=Math.atan2(ux,-uy)*180/Math.PI;
+    // unghia con riflesso
+    const lu=L*0.24, wu=wt*0.62, cx=topx-ux*(0.9+lu/2), cy=topy-uy*(0.9+lu/2);
+    SO.mano.appendChild(elSvg('rect',{x:cx-wu/2,y:cy-lu/2,width:wu,height:lu,rx:wu/2.2,class:'unghia',transform:'rotate('+ang.toFixed(1)+' '+cx.toFixed(2)+' '+cy.toFixed(2)+')'}));
+    SO.mano.appendChild(elSvg('ellipse',{cx:cx-wu*0.18,cy:cy-lu*0.12,rx:wu*0.12,ry:lu*0.28,class:'luce',transform:'rotate('+ang.toFixed(1)+' '+cx.toFixed(2)+' '+cy.toFixed(2)+')'}));
+    // pieghe delle articolazioni
+    [0.42,0.68].forEach(fr=>{
+      const px=topx-ux*L*fr, py=topy-uy*L*fr, w=(wt+(wb-wt)*fr)*0.32;
+      SO.mano.appendChild(elSvg('path',{d:'M'+P(px-nx*w,py-ny*w)+' Q'+P(px-ux*.7,py-uy*.7)+' '+P(px+nx*w,py+ny*w),class:'piega'}));
+    });
+  };
+  // Pollice (dietro al palmo), dimensione naturale
+  const gPoll=elSvg('g',{});
+  gPoll.appendChild(elSvg('path',{class:'pelle',fill:'url(#gDito)',d:'M-6.5,44 C-10,42 -13.5,37.5 -16.2,32 C-18,28.5 -20.2,24.6 -20,22.4 C-19.8,20.2 -17.2,19.6 -16,21.2 C-14.6,23 -13.2,26.2 -11.6,28.4 C-10.4,30 -9,30.6 -8.2,31 Z'}));
+  gPoll.appendChild(elSvg('rect',{x:-19.6,y:21.4,width:2.9,height:3.9,rx:1.3,class:'unghia',transform:'rotate(-28 -18.15 23.35)'}));
+  gPoll.appendChild(elSvg('path',{d:'M-16.4,29.6 Q-15.2,28.8 -14.2,29.8',class:'piega'}));
+  SO.mano.appendChild(gPoll);
+  // Dita: indice, medio, anulare, mignolo
+  dito(-6.0,24,-5.1,2.6,5.3,4.4);
+  dito(-0.4,23,0,0,5.5,4.6);
+  dito(5.2,24,5.1,1.8,5.2,4.3);
+  dito(10.0,25.5,9.4,8.6,4.4,3.7);
+  // Dorso della mano con le nocche
+  SO.mano.appendChild(elSvg('path',{fill:'url(#gPalmo)',d:'M-8.6,25.5 C-8.4,22 -7.8,20.5 -6,19.6 C-4.4,19 -3.4,20.6 -2.8,21 C-2,19 1.2,18.4 2.4,20.4 C3,21.2 3.4,20.4 4,20 C5.4,19.4 7.2,20.4 7.6,21.6 C8.2,21.2 8.8,21 9.6,21.2 C11.4,21.6 12.6,23.4 12.6,25.5 C13.4,30 13,38 10.6,44.5 C9.6,47 8.4,49 8.2,51 L8.2,53 Q1.3,55.4 -5.6,53 L-5.6,51 C-6,47 -7.2,44 -8.4,40 C-9.4,36 -9.4,30 -8.6,25.5 Z'}));
+  // contorno solo sui lati e sul polso, non dove partono le dita
+  SO.mano.appendChild(elSvg('path',{class:'bordoMano',d:'M-8.6,25.5 Q-9.1,28.2 -9.25,31.2 M-7.7,43.2 C-6.8,45.6 -5.9,48 -5.6,51 L-5.6,53 Q1.3,55.4 8.2,53 L8.2,51 C8.4,49 9.6,47 10.6,44.5 C13,38 13.4,30 12.6,25.5'}));
+  // riflessi sulle nocche e tendini accennati
+  [[-5.6,21.6],[-0.2,20.6],[5.4,21.6],[10.2,23.2]].forEach(([x,y])=>SO.mano.appendChild(elSvg('ellipse',{cx:x,cy:y,rx:1.5,ry:.8,class:'luce'})));
+  applicaPelle();
+  SO.gMano.appendChild(SO.mano); svg.appendChild(SO.gMano);
+  posaMano(SO.cx,SO.cy);
   SO.conto=elSvg('text',{x:226,y:28,'text-anchor':'end',class:'contoS'}); SO.conto.textContent='';
   svg.appendChild(SO.conto);
   SO.attivo=-2;
+}
+// Colore della mano: giallo come le emoji
+const PELLE={luce:'#ffdd5c',base:'#ffcb3d',ombra:'#f5b324',bordo:'#c98a00',piega:'#d99a10',unghia:'#ffe58f'};
+function applicaPelle(){
+  const t=PELLE;
+  if(SO.mano && SO.mano.style){ const st=SO.mano.style;
+    st.setProperty('--pLuce',t.luce); st.setProperty('--pBase',t.base); st.setProperty('--pOmbra',t.ombra);
+    st.setProperty('--bordo',t.bordo); st.setProperty('--piega',t.piega); st.setProperty('--pUnghia',t.unghia); }
+}
+// Mette la punta delle dita nel punto (x,y): il polso sta lungo la linea che va verso la spalla
+function posaMano(x,y){
+  const [sx,sy]=SO.spalla, dx=x-sx, dy=y-sy, L=Math.hypot(dx,dy)||1, ux=dx/L, uy=dy/L;
+  const wx=x-ux*SO.lungMano, wy=y-uy*SO.lungMano;           // polso
+  const inclin=Math.atan2(dx,-dy)*180/Math.PI;               // la mano resta in linea con il braccio
+  SO.braccio.setAttribute('x1',sx); SO.braccio.setAttribute('y1',sy);
+  SO.braccio.setAttribute('x2',wx+ux*2); SO.braccio.setAttribute('y2',wy+uy*2);
+  SO.gMano.setAttribute('transform','translate('+x.toFixed(1)+','+y.toFixed(1)+') rotate('+inclin.toFixed(1)+')');
 }
 function aggiornaSolfeggio(i,frac){
   if(!SO.mano || !SO.schema.length) return;
@@ -891,7 +968,7 @@ function aggiornaSolfeggio(i,frac){
       const k=frac*frac*(3-2*frac); x=ax+(bx-ax)*k; y=ay+(by-ay)*k;
     }
   }
-  SO.mano.setAttribute('x',x); SO.mano.setAttribute('y',y);
+  posaMano(x,y);
   SO.scia.setAttribute('x2',x); SO.scia.setAttribute('y2',y);
   if(i!==SO.attivo){
     for(const d in SO.mete){ SO.mete[d].style.fill=''; SO.mete[d].style.stroke=''; }
