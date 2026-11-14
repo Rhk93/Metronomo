@@ -4,15 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#14121f">
-<title>Metronomo · Classe chitarra Ignazio</title>
-<meta name="description" content="Metronomo per gli studenti di chitarra">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Metronomo">
-<link rel="apple-touch-icon" href="icona.png">
-<link rel="icon" type="image/png" href="icona.png">
-<link rel="manifest" href="manifest.json">
+<title>Metronomo</title>
 <style>
 :root{
   --bg:#14121f; --panel:#1f1c30; --panel-a:.85; --panel-rgba:rgba(31,28,48,.85);
@@ -51,15 +43,26 @@ header .titoli{min-width:0}
 #cerchio.forte.colpo{color:var(--on-accent)}
 #cerchio.forte{border-color:var(--accent)}
 #cerchio.forte.colpo{background:var(--accent)}
-#saltello{display:none;width:100%;max-width:440px}
-#svgSalto{width:100%;height:auto;display:block;overflow:visible}
-#svgSalto .rigo{stroke:var(--muted);stroke-width:1.4;opacity:.55}
-#svgSalto .nota{fill:var(--text);stroke:var(--text);transform-box:fill-box;transform-origin:center;transition:transform .1s}
-#svgSalto .nota.forte{fill:var(--accent);stroke:var(--accent)}
-#svgSalto .nota.muta{opacity:.25}
-#svgSalto .nota.colpita{transform:scale(1.25)}
-#svgSalto #palla{fill:var(--primary)}
-#svgSalto #ombra{fill:#000;opacity:.25}
+#notaBox{display:none;width:100%;max-width:290px}
+#svgNota{width:100%;height:auto;display:block;overflow:visible}
+#svgNota .bordo{fill:none;stroke:var(--text);stroke-width:5}
+#svgNota .divBatt{stroke:var(--text);stroke-width:2.5;opacity:.85}
+#svgNota .divSudd{stroke:var(--text);stroke-width:1.2;opacity:.4;stroke-dasharray:3 3}
+#svgNota .tacca{stroke:var(--text);stroke-linecap:round}
+#svgNota .lancetta{stroke:var(--text);stroke-width:4;stroke-linecap:round}
+#svgNota .perno{fill:var(--text)}
+#svgNota .centro{fill:var(--panel)}
+#svgNota .numC{font-size:34px;font-weight:800;fill:var(--muted)}
+#svgNota .notina{fill:var(--text);stroke:var(--text)}
+#solfBox{display:none;width:100%;max-width:290px}
+#svgSolf{width:100%;height:auto;display:block;overflow:visible}
+#svgSolf .guida{stroke:var(--muted);stroke-width:1.5;stroke-dasharray:4 5;opacity:.6}
+#svgSolf .meta{fill:none;stroke:var(--muted);stroke-width:2;opacity:.8}
+#svgSolf .etich{font-size:13px;font-weight:700;fill:var(--muted)}
+#svgSolf .centroS{fill:var(--text)}
+#svgSolf .scia{stroke:var(--primary);stroke-width:3;stroke-linecap:round;opacity:.55}
+#svgSolf .mano{font-size:38px}
+#svgSolf .contoS{font-size:22px;font-weight:800;fill:var(--text)}
 #numerone{display:none;font-size:7em;font-weight:calc(var(--weight) + 400);line-height:1;color:var(--primary)}
 #numerone.forte{color:var(--accent)}
 
@@ -102,7 +105,8 @@ body.compatto #visual{min-height:110px}
 body.compatto #pendolo{transform:scale(.7)}
 body.compatto #cerchio{width:110px;height:110px;font-size:2.8em}
 body.compatto #numerone{font-size:4.5em}
-body.compatto #saltello{max-width:330px}
+body.compatto #notaBox{max-width:190px}
+body.compatto #solfBox{max-width:190px}
 body.compatto #bpm{font-size:calc(3.8em * var(--bpmsize))}
 body.compatto #app{gap:8px}
 body.compatto .card{padding:10px}
@@ -111,7 +115,8 @@ body.grande #visual{min-height:240px}
 body.grande #pendolo{transform:scale(1.35)}
 body.grande #cerchio{width:240px;height:240px;font-size:6em}
 body.grande #numerone{font-size:10em}
-body.grande #saltello{max-width:640px}
+body.grande #notaBox{max-width:400px}
+body.grande #solfBox{max-width:400px}
 body.grande #bpm{font-size:calc(7em * var(--bpmsize))}
 body.grande #start{height:90px;font-size:1.9em}
 body.nascondi-nome #nomeTempo{display:none}
@@ -178,7 +183,8 @@ input[type=color]{width:44px;height:36px;border:none;background:none;padding:0}
     <div id="pendolo"><div class="base"></div><div id="asta"></div></div>
     <div id="cerchio">1</div>
     <div id="numerone">1</div>
-    <div id="saltello"><svg id="svgSalto" viewBox="0 0 340 150"></svg></div>
+    <div id="notaBox"><svg id="svgNota" viewBox="0 0 240 240"></svg></div>
+    <div id="solfBox"><svg id="svgSolf" viewBox="0 0 240 240"></svg></div>
   </div>
 
   <div class="card" id="cardBattiti">
@@ -230,7 +236,7 @@ input[type=color]{width:44px;height:36px;border:none;background:none;padding:0}
 <div id="pannello">
   <div id="foglio">
     <header>
-      <h2>Impostazioni</h2>
+      <h2>Impostazioni <small style="font-size:.6em;opacity:.6;font-weight:400">versione 6</small></h2>
       <button class="icona" id="chiudiImpostazioni" aria-label="Chiudi">✕</button>
     </header>
     <div id="schede">
@@ -257,7 +263,7 @@ input[type=color]{width:44px;height:36px;border:none;background:none;padding:0}
           <div class="interr">Lampeggio dello schermo a ogni battito<input type="checkbox" id="flashOn"></div>
           <div class="interr">Lampeggio solo sull'accento<input type="checkbox" id="flashSoloAcc"></div>
           <div class="interr">Vibrazione sull'accento<input type="checkbox" id="vibraOn"></div>
-          <div class="interr">Continua a suonare se cambio app o scheda<input type="checkbox" id="sottofondo"></div>
+          <div class="interr">Continua a suonare se esco dall'app<input type="checkbox" id="sottofondo"></div>
           <div class="avviso">In secondo piano il telefono può rallentare il tempo: per la massima precisione tieni l'app aperta.</div>
         </div>
       </div>
@@ -328,6 +334,13 @@ input[type=color]{width:44px;height:36px;border:none;background:none;padding:0}
           <h3>Temi pronti</h3>
           <div class="temi" id="temi"></div>
         </div>
+        <div class="gruppo">
+          <h3>Colori dei battiti (orologio)</h3>
+          <div class="interr">Un colore diverso per ogni battito<input type="checkbox" id="arcobaleno"></div>
+          <div class="avviso">Se lo spegni: colore accento sul 1° battito, colore principale sugli altri.</div>
+          <div id="listaColBatt" style="margin-top:10px"></div>
+          <button class="btn mini" style="width:100%;margin-top:8px" id="resetColBatt">Ripristina i colori dei battiti</button>
+        </div>
         <div class="gruppo" id="gruppoColori"></div>
         <div class="gruppo">
           <h3>Pannelli</h3>
@@ -367,7 +380,8 @@ input[type=color]{width:44px;height:36px;border:none;background:none;padding:0}
         <div class="gruppo">
           <h3>Animazione</h3>
           <div class="campo"><select id="visuale">
-            <option value="pallino">Pallino che salta sulle note</option>
+            <option value="nota">Orologio del tempo</option>
+            <option value="solfeggio">Solfeggio (mano che batte il tempo)</option>
             <option value="pendolo">Pendolo</option>
             <option value="cerchio">Cerchio che pulsa</option>
             <option value="numero">Numero grande del battito</option>
@@ -486,7 +500,7 @@ const DEFAULT = {
   colori:{...TEMI['Notte']}, panelA:85, raggio:18,
   font:FONT[0][0], scala:100, bpmSize:100, peso:400, maiuscolo:false,
   titolo:'Metronomo', sottotitolo:'Classe chitarra Ignazio',
-  layout:'classico', visuale:'pallino',
+  layout:'classico', visuale:'nota', versione:6, arcobaleno:true, coloriBattiti:null,
   mostra:{titolo:true,battiti:true,nome:true,tap:true,rapidi:true,stato:true},
   velo:30, sfoc:0, adatta:'cover', posFoto:'center'
 };
@@ -509,6 +523,9 @@ function scrivi(k,v){try{localStorage.setItem(k,v);return true}catch(e){return f
 let S;
 try{S = unisci(DEFAULT, JSON.parse(leggi(CHIAVE)||'null'))}catch(e){S = clona(DEFAULT)}
 let timerSalva=null;
+// Aggiornamento alla versione 5: mostra subito l'orologio del tempo
+let salvatoPrima=null; try{salvatoPrima=JSON.parse(leggi(CHIAVE)||'null')}catch(e){}
+if(salvatoPrima && !(salvatoPrima.versione>=6)){ if(!(salvatoPrima.versione>=5)) S.visuale='nota'; S.versione=6; scrivi(CHIAVE,JSON.stringify(S)); }
 function salva(){clearTimeout(timerSalva);timerSalva=setTimeout(()=>scrivi(CHIAVE,JSON.stringify(S)),250)}
 
 const $ = id => document.getElementById(id);
@@ -529,23 +546,6 @@ function preparaAudio(){
   const len = ctx.sampleRate; bufRumore = ctx.createBuffer(1,len,ctx.sampleRate);
   const d = bufRumore.getChannelData(0); for(let i=0;i<len;i++) d[i]=Math.random()*2-1;
 }
-/* iPhone: fa suonare il metronomo anche con il tasto silenzioso attivo */
-let audioMuto=null;
-function sbloccaIOS(){
-  try{ if(navigator.audioSession) navigator.audioSession.type='playback'; }catch(e){}
-  if(audioMuto) return;
-  try{
-    const n=8000, buf=new ArrayBuffer(44+n), v=new DataView(buf);
-    const w=(o,t)=>{for(let i=0;i<t.length;i++) v.setUint8(o+i,t.charCodeAt(i))};
-    w(0,'RIFF'); v.setUint32(4,36+n,true); w(8,'WAVE'); w(12,'fmt '); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
-    v.setUint32(24,8000,true); v.setUint32(28,8000,true); v.setUint16(32,1,true); v.setUint16(34,8,true); w(36,'data'); v.setUint32(40,n,true);
-    for(let i=0;i<n;i++) v.setUint8(44+i,128);
-    audioMuto=new Audio(URL.createObjectURL(new Blob([buf],{type:'audio/wav'})));
-    audioMuto.loop=true; audioMuto.setAttribute('playsinline',''); audioMuto.volume=0.01;
-    const pr=audioMuto.play(); if(pr) pr.catch(()=>{});
-  }catch(e){}
-}
-function riprendiAudio(){ sbloccaIOS(); if(ctx && ctx.state!=='running') ctx.resume(); }
 function aggiornaVolume(){ if(master) master.gain.value = Math.pow(S.master/100,1.5)*1.6; }
 function inviluppo(g,t,v,att,dec){
   v=Math.max(v,0.0002);
@@ -649,7 +649,7 @@ function pianificatore(){
 }
 function avvia(){
   preparaAudio();
-  riprendiAudio();
+  if(ctx.state==='suspended') ctx.resume();
   if(S.trOn){ S.bpm = limita(S.trDa,20,300); mostraBpm(); }
   inMarcia=true; iBattito=0; iSudd=0; nBattute=0; coda=[]; inAttacco=S.countIn;
   ultimoBattito={t:0,i:-1,dur:60/S.bpm};
@@ -666,7 +666,7 @@ function ferma(){
   $('start').textContent='▶ AVVIA'; $('start').classList.remove('attivo');
   document.querySelectorAll('.batt.on').forEach(b=>b.classList.remove('on'));
   $('asta').style.transform='rotate(0deg)';
-  muoviPalla(0,0);
+  riposoNota();
   $('cerchio').classList.remove('colpo');
   $('infoAllen').textContent='';
   tieniSchermo(false);
@@ -696,10 +696,15 @@ function disegna(){
     const dir = (ultimoBattito.i % 2===0) ? -1 : 1;
     $('asta').style.transform = 'rotate('+(dir*28*Math.cos(Math.PI*frac))+'deg)';
   }
-  // Pallino che salta
-  if(S.visuale==='pallino'){
-    if(ultimoBattito.i<0) muoviPalla(0,0);
-    else muoviPalla(ultimoBattito.i, Math.min(1, Math.max(0,(ora - ultimoBattito.t)/ultimoBattito.dur)));
+  // Solfeggio
+  if(S.visuale==='solfeggio'){
+    if(ultimoBattito.i<0) aggiornaSolfeggio(-1,0);
+    else aggiornaSolfeggio(ultimoBattito.i, Math.min(1,Math.max(0,(ora-ultimoBattito.t)/ultimoBattito.dur)));
+  }
+  // Orologio del tempo
+  if(S.visuale==='nota'){
+    if(ultimoBattito.i<0) aggiornaOrologio(-1,0,false);
+    else aggiornaOrologio(ultimoBattito.i, Math.min(1,Math.max(0,(ora-ultimoBattito.t)/ultimoBattito.dur)), ultimoBattito.muta);
   }
   // Cronometro
   const sec = Math.floor((Date.now()-inizioStudio)/1000);
@@ -716,7 +721,6 @@ function colpoVisivo(n){
   else if(S.trOn) info='→ '+S.trA;
   $('infoAllen').textContent=info;
   if(n.muta) return;
-  if(S.visuale==='pallino' && n.liv>0) colpisciNota(n.i);
   const forte = n.liv===2;
   const c=$('cerchio'), num=$('numerone');
   c.textContent = n.i+1; num.textContent = n.i+1;
@@ -730,56 +734,188 @@ function colpoVisivo(n){
   if(S.vibra && forte && navigator.vibrate){ try{navigator.vibrate(30)}catch(e){} }
 }
 
-/* ================== PALLINO CHE SALTA SULLE SEMIMINIME ================== */
+/* ================== OROLOGIO DEL TEMPO ================== */
 const NS='http://www.w3.org/2000/svg';
-const SALTO={W:340, y0:108, g:9, xs:[], yAtterra:0, rPalla:8, ry:6};
+const COLORI_BATTITI=['#ff4d6d','#f5a623','#2ec4b6','#7048e8','#7ed957','#00b4d8','#f15bb5','#ffd23f',
+  '#ff8c42','#4cc9f0','#b5179e','#90be6d','#e63946','#3a86ff','#ffbe0b','#06d6a0'];
+const OR={off:0,cx:120,cy:120,R:104,pieni:[],fondi:[],note:[],lancetta:null,num:null,attivo:-1};
 function elSvg(tag,att){ const e=document.createElementNS(NS,tag); for(const k in att) e.setAttribute(k,att[k]); return e; }
+function coloreBattito(i,liv){
+  if(S.arcobaleno) return (S.coloriBattiti && S.coloriBattiti[i]) || COLORI_BATTITI[i % COLORI_BATTITI.length];
+  return liv===2 ? S.colori.accent : S.colori.primary;
+}
+// Punto sul cerchio: angolo 0 = ore 12, in senso orario
+function punto(ang,r){ const a=(ang+OR.off-90)*Math.PI/180; return [OR.cx+r*Math.cos(a), OR.cy+r*Math.sin(a)]; }
+function spicchio(a0,a1,r){
+  if(a1-a0>=359.9) return 'M'+(OR.cx-r)+','+OR.cy+' a'+r+','+r+' 0 1,1 '+(2*r)+',0 a'+r+','+r+' 0 1,1 '+(-2*r)+',0 Z';
+  if(a1-a0<=0.01) return '';
+  const [x0,y0]=punto(a0,r), [x1,y1]=punto(a1,r);
+  return 'M'+OR.cx+','+OR.cy+' L'+x0+','+y0+' A'+r+','+r+' 0 '+(a1-a0>180?1:0)+',1 '+x1+','+y1+' Z';
+}
 function disegnaNote(){
-  const svg=$('svgSalto'); if(!svg) return;
+  const svg=$('svgNota'); if(!svg) return;
   svg.innerHTML='';
-  const N=S.battiti, W=SALTO.W, y0=SALTO.y0, g=SALTO.g;
-  // Pentagramma
-  for(let k=-2;k<=2;k++) svg.appendChild(elSvg('line',{x1:6,x2:W-6,y1:y0+k*g,y2:y0+k*g,class:'rigo'}));
-  svg.appendChild(elSvg('line',{x1:6,x2:6,y1:y0-2*g,y2:y0+2*g,class:'rigo'}));
-  svg.appendChild(elSvg('line',{x1:W-6,x2:W-6,y1:y0-2*g,y2:y0+2*g,class:'rigo'}));
-  // Posizione delle note
-  const margine=34, passo=N>1?(W-2*margine)/(N-1):0;
-  SALTO.xs=[]; for(let i=0;i<N;i++) SALTO.xs.push(N>1 ? margine+i*passo : W/2);
-  const rx=Math.max(5,Math.min(9, N>1?passo*0.36:9)), ry=rx*0.72;
-  SALTO.ry=ry; SALTO.rPalla=Math.max(5,Math.min(8,rx*0.9));
-  SALTO.yAtterra=y0-ry-SALTO.rPalla-1;
-  // Ombra e pallino (disegnati prima delle note? no: ombra prima, palla dopo)
-  svg.appendChild(elSvg('ellipse',{id:'ombra',cx:SALTO.xs[0],cy:y0-ry+1,rx:SALTO.rPalla,ry:2}));
-  // Semiminime: testa piena + gambo in giù (così il pallino atterra sulla testa)
-  S.accenti.forEach((liv,i)=>{
-    const x=SALTO.xs[i];
-    const gr=elSvg('g',{class:'nota'+(liv===2?' forte':'')+(liv===0?' muta':''),id:'nota'+i});
-    gr.appendChild(elSvg('ellipse',{cx:x,cy:y0,rx:rx,ry:ry,transform:'rotate(-20 '+x+' '+y0+')'}));
-    const xg=x-rx+1.2;
-    gr.appendChild(elSvg('line',{x1:xg,x2:xg,y1:y0+1,y2:y0+3.4*g,'stroke-width':Math.max(1.4,rx*0.2),'stroke-linecap':'round'}));
-    svg.appendChild(gr);
-  });
-  svg.appendChild(elSvg('ellipse',{id:'palla',cx:SALTO.xs[0],cy:SALTO.yAtterra,rx:SALTO.rPalla,ry:SALTO.rPalla}));
+  const N=S.battiti, R=OR.R, passo=360/N;
+  OR.off = N>1 ? -passo : 0;   // il 1° battito è lo spicchio in alto a sinistra
+  OR.pieni=[]; OR.fondi=[]; OR.note=[];
+  // Spicchi: fondo chiaro + parte che si riempie
+  for(let i=0;i<N;i++){
+    const col=coloreBattito(i,S.accenti[i]);
+    const f=elSvg('path',{d:spicchio(i*passo,(i+1)*passo,R),fill:col,opacity:S.accenti[i]===0?.05:.14});
+    const p=elSvg('path',{d:'',fill:col});
+    svg.append(f,p); OR.fondi.push(f); OR.pieni.push(p);
+  }
+  // Divisioni delle suddivisioni (tratteggiate) e dei battiti (piene)
+  for(let i=0;i<N;i++){
+    for(let k=1;k<S.sudd;k++){
+      const ang=i*passo+passo*k/S.sudd, [x1,y1]=punto(ang,R*0.36), [x2,y2]=punto(ang,R);
+      svg.appendChild(elSvg('line',{x1,y1,x2,y2,class:'divSudd'}));
+    }
+    if(N>1){ const [x1,y1]=punto(i*passo,R*0.33), [x2,y2]=punto(i*passo,R); svg.appendChild(elSvg('line',{x1,y1,x2,y2,class:'divBatt'})); }
+  }
+  // Tacche sul bordo come un orologio
+  const tot=N*S.sudd;
+  for(let k=0;k<tot;k++){
+    const grande=k%S.sudd===0, ang=k*360/tot;
+    const [x1,y1]=punto(ang,R-(grande?13:7)), [x2,y2]=punto(ang,R-2);
+    svg.appendChild(elSvg('line',{x1,y1,x2,y2,class:'tacca','stroke-width':grande?4:2}));
+  }
+  svg.appendChild(elSvg('circle',{cx:OR.cx,cy:OR.cy,r:R,class:'bordo'}));
+  // Una semiminima in ogni spicchio
+  const sc=Math.max(.45,Math.min(1,4/N*0.9+0.1));
+  for(let i=0;i<N;i++){
+    const [x,y]=punto(i*passo+passo/2,R*0.66);
+    const g=elSvg('g',{class:'notina',transform:'translate('+x+','+y+') scale('+sc+')',opacity:S.accenti[i]===0?.3:1});
+    g.appendChild(elSvg('ellipse',{cx:-2,cy:9,rx:8,ry:5.8,transform:'rotate(-20 -2 9)'}));
+    g.appendChild(elSvg('line',{x1:5.3,x2:5.3,y1:8,y2:-17,'stroke-width':2.2,'stroke-linecap':'round'}));
+    svg.appendChild(g); OR.note.push(g);
+  }
+  // Lancetta, centro e numero del battito
+  const [lx,ly]=punto(0,R*0.9);
+  OR.lancetta=elSvg('line',{x1:OR.cx,y1:OR.cy,x2:lx,y2:ly,class:'lancetta'});
+  svg.appendChild(OR.lancetta);
+  svg.appendChild(elSvg('circle',{cx:OR.cx,cy:OR.cy,r:R*0.3,class:'centro'}));
+  OR.num=elSvg('text',{x:OR.cx,y:OR.cy+12,'text-anchor':'middle',class:'numC'}); OR.num.textContent='1';
+  svg.appendChild(OR.num);
+  OR.attivo=-2;
+  disegnaSolfeggio();
 }
-function muoviPalla(i,frac){
-  const N=SALTO.xs.length; if(!N) return;
-  const palla=$('palla'), ombra=$('ombra'); if(!palla) return;
-  i=((i%N)+N)%N;
-  const da=SALTO.xs[i], a=SALTO.xs[(i+1)%N];
-  const ritorno = (i+1)%N===0 && N>1;
-  const altezza = ritorno ? 82 : 62;
-  const x = N===1 ? da : da+(a-da)*frac;
-  const y = SALTO.yAtterra - altezza*4*frac*(1-frac);
-  // Schiacciamento quando tocca la nota
-  const vicino=Math.min(frac,1-frac), r=SALTO.rPalla;
-  const sch = vicino<0.07 ? 1-(0.07-vicino)*4 : 1;
-  palla.setAttribute('cx',x); palla.setAttribute('cy',y+r*(1-sch));
-  palla.setAttribute('rx',r*(2-sch)); palla.setAttribute('ry',r*sch);
-  ombra.setAttribute('cx',x); ombra.setAttribute('rx',r*(0.4+0.6*(1-(SALTO.yAtterra-y)/90)));
+function aggiornaOrologio(i,frac,muta){
+  const N=OR.pieni.length; if(!N) return;
+  const passo=360/N;
+  for(let j=0;j<N;j++){
+    const p=OR.pieni[j];
+    if(i>=0 && j<i){ p.setAttribute('d',spicchio(j*passo,(j+1)*passo,OR.R)); p.setAttribute('opacity',.4); }
+    else if(j===i){ p.setAttribute('d',spicchio(j*passo,j*passo+passo*frac,OR.R)); p.setAttribute('opacity',muta?.35:.95); }
+    else p.setAttribute('d','');
+  }
+  // Lancetta che gira
+  const ang = i<0 ? 0 : (i+frac)*passo;
+  const [lx,ly]=punto(ang,OR.R*0.9);
+  OR.lancetta.setAttribute('x2',lx); OR.lancetta.setAttribute('y2',ly);
+  if(i!==OR.attivo){
+    OR.note.forEach((g,j)=>{ const c=j===i?'#ffffff':''; g.style.fill=c; g.style.stroke=c; });
+    OR.num.textContent = i<0 ? '1' : (i+1);
+    OR.num.style.fill = i<0 ? '' : coloreBattito(i,S.accenti[i]);
+    OR.attivo=i;
+  }
 }
-function colpisciNota(i){
-  const n=$('nota'+i); if(!n) return;
-  n.classList.add('colpita'); setTimeout(()=>n.classList.remove('colpita'),110);
+function riposoNota(){ OR.attivo=-2; aggiornaOrologio(-1,0,false); aggiornaSolfeggio(-1,0); }
+
+/* ================== SOLFEGGIO: MANO CHE BATTE IL TEMPO ================== */
+const DIREZ={giu:[0,1],sinistra:[-1,0],destra:[1,0],su:[0,-1]};
+const SO={cx:120,cy:112,dist:82,schema:[],mano:null,scia:null,mete:{},conto:null,attivo:-2};
+// Per ogni battito: direzione e ampiezza del movimento
+function schemaSolfeggio(N,nota){
+  const sch=[];
+  if(nota===8 && N>=3){
+    // Tempi in ottavi: ogni gruppo da 3 è un movimento unico
+    // 1/8 tocca il punto, 2/8 si ferma a metà strada, 3/8 si ferma al centro
+    const giro=['giu','sinistra','destra','su'], amp=[1,0.5,0];
+    for(let i=0;i<N;i++){ sch.push({dir:giro[Math.floor(i/3)%4], amp:amp[i%3]}); }
+    return sch;
+  }
+  let dirs;
+  if(N===1) dirs=['giu'];
+  else if(N===2) dirs=['giu','su'];
+  else if(N===3) dirs=['giu','destra','su'];
+  else if(N===4) dirs=['giu','sinistra','destra','su'];
+  else { dirs=['giu']; for(let i=1;i<N-1;i++) dirs.push(i%2===1?'sinistra':'destra'); dirs.push('su'); }
+  return dirs.map(d=>({dir:d,amp:1}));
+}
+function puntoSolf(dir,amp){ const v=DIREZ[dir]; return [SO.cx+v[0]*SO.dist*amp, SO.cy+v[1]*SO.dist*amp]; }
+function disegnaSolfeggio(){
+  const svg=$('svgSolf'); if(!svg) return;
+  svg.innerHTML='';
+  SO.schema=schemaSolfeggio(S.battiti,S.nota); SO.mete={};
+  // Guide tratteggiate e punti d'arrivo con i numeri dei battiti
+  const gruppi={};
+  SO.schema.forEach((b,i)=>{ (gruppi[b.dir]=gruppi[b.dir]||[]).push(i+1); });
+  for(const d in gruppi){
+    const [x,y]=puntoSolf(d,1);
+    svg.appendChild(elSvg('line',{x1:SO.cx,y1:SO.cy,x2:x,y2:y,class:'guida'}));
+    const m=elSvg('circle',{cx:x,cy:y,r:11,class:'meta'}); svg.appendChild(m); SO.mete[d]=m;
+    const v=DIREZ[d], vert=v[0]===0;
+    const t=elSvg('text',{x:vert?x+18:x, y:vert?y+5:y-18, 'text-anchor':vert?'start':'middle', class:'etich'});
+    t.textContent=gruppi[d].join(' · '); svg.appendChild(t);
+  }
+  SO.scia=elSvg('line',{x1:SO.cx,y1:SO.cy,x2:SO.cx,y2:SO.cy,class:'scia'}); svg.appendChild(SO.scia);
+  svg.appendChild(elSvg('circle',{cx:SO.cx,cy:SO.cy,r:6,class:'centroS'}));
+  SO.mano=elSvg('text',{x:SO.cx,y:SO.cy,'text-anchor':'middle','dominant-baseline':'central',class:'mano'}); SO.mano.textContent='✋';
+  svg.appendChild(SO.mano);
+  SO.conto=elSvg('text',{x:226,y:28,'text-anchor':'end',class:'contoS'}); SO.conto.textContent='';
+  svg.appendChild(SO.conto);
+  SO.attivo=-2;
+}
+function aggiornaSolfeggio(i,frac){
+  if(!SO.mano || !SO.schema.length) return;
+  const N=SO.schema.length; let x=SO.cx, y=SO.cy;
+  if(i>=0){
+    i=i%N;
+    const ora=SO.schema[i], dopo=SO.schema[(i+1)%N];
+    const [ax,ay]=puntoSolf(ora.dir,ora.amp), [bx,by]=puntoSolf(dopo.dir,dopo.amp);
+    if(dopo.amp===1 && ora.amp>0){
+      // Dal punto toccato torna al centro, poi accelera verso il prossimo colpo
+      if(frac<0.5){ const q=frac*2, k=(1-q)*(1-q); x=SO.cx+(ax-SO.cx)*k; y=SO.cy+(ay-SO.cy)*k; }
+      else { const q=(frac-0.5)*2, k=q*q; x=SO.cx+(bx-SO.cx)*k; y=SO.cy+(by-SO.cy)*k; }
+    } else if(dopo.amp===1){
+      // Dal centro parte e accelera fino a toccare
+      const k=frac*frac; x=ax+(bx-ax)*k; y=ay+(by-ay)*k;
+    } else {
+      // Risale con calma e si ferma sul punto successivo (metà strada o centro)
+      const k=frac*frac*(3-2*frac); x=ax+(bx-ax)*k; y=ay+(by-ay)*k;
+    }
+  }
+  SO.mano.setAttribute('x',x); SO.mano.setAttribute('y',y);
+  SO.scia.setAttribute('x2',x); SO.scia.setAttribute('y2',y);
+  if(i!==SO.attivo){
+    for(const d in SO.mete){ SO.mete[d].style.fill=''; SO.mete[d].style.stroke=''; }
+    if(i>=0){ const d=SO.schema[i].dir, c=coloreBattito(i,S.accenti[i]); SO.mete[d].style.fill=c; SO.mete[d].style.stroke=c; SO.conto.textContent=i+1; SO.conto.style.fill=c; }
+    else { SO.conto.textContent=''; }
+    SO.attivo=i;
+  }
+}
+function disegnaColoriBattiti(){
+  const box=$('listaColBatt'); if(!box) return;
+  box.innerHTML='';
+  box.style.display = S.arcobaleno ? 'block' : 'none';
+  $('resetColBatt').style.display = S.arcobaleno ? 'block' : 'none';
+  if(!S.coloriBattiti) S.coloriBattiti=COLORI_BATTITI.slice();
+  for(let i=0;i<S.battiti;i++){
+    const c=document.createElement('div'); c.className='campo';
+    const lab=document.createElement('label');
+    lab.innerHTML='Battito '+(i+1)+' <span style="display:inline-block;width:46px;height:16px;border-radius:8px;background:'+S.coloriBattiti[i]+'"></span>';
+    const riga=document.createElement('div'); riga.className='colori';
+    PALETTE.forEach(col=>{
+      const d=document.createElement('div'); d.className='col'+(S.coloriBattiti[i].toLowerCase()===col?' sel':''); d.style.background=col;
+      d.onclick=()=>{ S.coloriBattiti[i]=col; disegnaColoriBattiti(); disegnaNote(); salva(); };
+      riga.appendChild(d);
+    });
+    const inp=document.createElement('input'); inp.type='color'; inp.value=S.coloriBattiti[i];
+    inp.onchange=e=>{ S.coloriBattiti[i]=e.target.value; disegnaColoriBattiti(); disegnaNote(); salva(); };
+    riga.appendChild(inp);
+    c.append(lab,riga); box.appendChild(c);
+  }
 }
 
 /* ================== INTERFACCIA PRINCIPALE ================== */
@@ -802,6 +938,7 @@ function disegnaBattiti(){
     box.appendChild(d);
   });
   disegnaNote();
+  disegnaColoriBattiti();
 }
 function impostaTempo(b,n){
   const vecchio=S.battiti;
@@ -832,7 +969,7 @@ $('tap').addEventListener('pointerdown',e=>{
     let somma=0; for(let i=1;i<tocchi.length;i++) somma+=tocchi[i]-tocchi[i-1];
     impostaBpm(60000/(somma/(tocchi.length-1)));
   }
-  preparaAudio(); riprendiAudio();
+  preparaAudio(); if(ctx.state==='suspended') ctx.resume();
   if(!inMarcia) suona(S.voci.battito.suono, ctx.currentTime+0.01, S.voci.battito.vol, S.voci.battito.tono);
 });
 $('start').onclick=()=> inMarcia ? ferma() : avvia();
@@ -887,7 +1024,7 @@ for(const k in NOMI_VOCI){
     '<button class="btn mini" style="width:100%" id="p_'+k+'">▶ Prova suono</button>';
   $('vociSuono').appendChild(g);
   riempiSelect($('s_'+k), Object.entries(SUONI));
-  const prova=()=>{ preparaAudio(); riprendiAudio(); const v=S.voci[k]; suona(v.suono, ctx.currentTime+0.02, v.vol, v.tono); };
+  const prova=()=>{ preparaAudio(); if(ctx.state==='suspended') ctx.resume(); const v=S.voci[k]; suona(v.suono, ctx.currentTime+0.02, v.vol, v.tono); };
   $('s_'+k).onchange=e=>{ S.voci[k].suono=e.target.value; prova(); salva(); };
   $('v_'+k).oninput=e=>{ S.voci[k].vol=+e.target.value; $('v_'+k+'V').textContent=e.target.value+'%'; salva(); };
   $('v_'+k).onchange=prova;
@@ -939,6 +1076,8 @@ lega('flashOn','flash','bool'); lega('flashSoloAcc','flashSoloAcc','bool'); lega
 lega('swing','swing','num',v=>$('swingV').textContent=v+'%');
 lega('accPrimo','accPrimo','bool',v=>{ S.accenti[0]= v?2:1; disegnaBattiti(); });
 lega('countIn','countIn','bool');
+lega('arcobaleno','arcobaleno','bool',()=>{ disegnaColoriBattiti(); disegnaNote(); });
+$('resetColBatt').onclick=()=>{ S.coloriBattiti=COLORI_BATTITI.slice(); disegnaColoriBattiti(); disegnaNote(); salva(); toast('Colori ripristinati'); };
 lega('trOn','trOn','bool');
 const numeri={trDa:[20,300],trA:[20,300],trPasso:[1,50],trOgni:[1,64],gapSuona:[1,32],gapMuto:[1,32],timerMin:[0,240]};
 for(const k in numeri){ $(k).addEventListener('change',e=>{ S[k]=limita(e.target.value,...numeri[k]); e.target.value=S[k]; salva(); }); }
@@ -962,13 +1101,13 @@ document.querySelectorAll('.mostra').forEach(c=>c.addEventListener('change',()=>
 
 [$('qBattiti'),$('rBattiti')].forEach(s=>s.onchange=e=>impostaTempo(+e.target.value));
 [$('qNota'),$('rNota')].forEach(s=>s.onchange=e=>impostaTempo(S.battiti,+e.target.value));
-[$('qSudd'),$('rSudd')].forEach(s=>s.onchange=e=>{ S.sudd=+e.target.value; iSudd=0; aggiornaControlli(); salva(); });
+[$('qSudd'),$('rSudd')].forEach(s=>s.onchange=e=>{ S.sudd=+e.target.value; iSudd=0; aggiornaControlli(); disegnaNote(); salva(); });
 $('accTutti').onclick=()=>{ S.accenti=S.accenti.map(()=>1); disegnaBattiti(); salva(); };
 $('accReset').onclick=()=>{ S.accenti=S.accenti.map((x,i)=> i===0&&S.accPrimo?2:1); disegnaBattiti(); salva(); };
 $('resetTutto').onclick=()=>{
   if(!confirm('Ripristinare tutte le impostazioni? La foto e i preferiti restano.')) return;
   if(inMarcia) ferma();
-  S=clona(DEFAULT); salva(); aggiornaControlli(); applicaAspetto(); applicaFoto(); disegnaPalette(); disegnaBattiti(); mostraBpm();
+  S=clona(DEFAULT); salva(); disegnaColoriBattiti(); aggiornaControlli(); applicaAspetto(); applicaFoto(); disegnaPalette(); disegnaBattiti(); mostraBpm();
   toast('Impostazioni ripristinate');
 };
 
@@ -994,7 +1133,9 @@ function applicaAspetto(){
   $('pendolo').style.display = S.visuale==='pendolo'?'block':'none';
   $('cerchio').style.display = S.visuale==='cerchio'?'flex':'none';
   $('numerone').style.display = S.visuale==='numero'?'block':'none';
-  $('saltello').style.display = S.visuale==='pallino'?'block':'none';
+  $('notaBox').style.display = S.visuale==='nota'?'block':'none';
+  $('solfBox').style.display = S.visuale==='solfeggio'?'block':'none';
+  disegnaNote();
   $('visual').style.display = S.visuale==='nessuna'?'none':'flex';
   document.querySelector('meta[name=theme-color]').content=c.bg;
   $('scalaV').textContent=S.scala+'%'; $('bpmSizeV').textContent=S.bpmSize+'%';
@@ -1078,7 +1219,7 @@ function aggiornaControlli(){
     $('t_'+k).value=v.tono; $('t_'+k+'V').textContent=(v.tono>0?'+':'')+v.tono; }
   $('flashOn').checked=S.flash; $('flashSoloAcc').checked=S.flashSoloAcc; $('vibraOn').checked=S.vibra; $('sottofondo').checked=S.sottofondo;
   $('swing').value=S.swing; $('swingV').textContent=S.swing+'%'; $('accPrimo').checked=S.accPrimo;
-  $('countIn').checked=S.countIn; $('trOn').checked=S.trOn; $('gapOn').checked=S.gapOn;
+  $('countIn').checked=S.countIn; $('arcobaleno').checked=S.arcobaleno; $('trOn').checked=S.trOn; $('gapOn').checked=S.gapOn;
   for(const k in numeri) $(k).value=S[k];
   $('panelA').value=S.panelA; $('raggio').value=S.raggio;
   $('font').value=S.font; $('scala').value=S.scala; $('bpmSize').value=S.bpmSize; $('peso').value=S.peso; $('maiuscolo').checked=S.maiuscolo;
@@ -1095,11 +1236,6 @@ document.addEventListener('visibilitychange',()=>{ if(document.hidden){ window.a
 
 /* ================== AVVIO ================== */
 aggiornaControlli(); applicaAspetto(); applicaFoto(); disegnaPalette(); disegnaBattiti(); disegnaPreset(); mostraBpm();
-
-/* Funziona anche senza internet dopo la prima apertura */
-if('serviceWorker' in navigator && location.protocol.startsWith('http')){
-  navigator.serviceWorker.register('sw.js').catch(()=>{});
-}
 </script>
 </body>
 </html>
